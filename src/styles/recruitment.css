@@ -1,0 +1,751 @@
+/* =============================================================================
+ * 招聘官网（Careers Site）样式入口 —— 对应 UI 设计说明 §13 / §14 / §12
+ *
+ * 隔离说明：
+ * - 本文件所有 Design Tokens 定义在 `.careers-app` 作用域内，不会影响现有应用（AI Chat）。
+ * - 类名统一使用 `rc-`（recruitment）前缀，与现有 `app-` / `ai-` 前缀无冲突。
+ * - 办公环境等图片区域不使用实拍照片，仅用渐变 / 几何装饰 / SVG 插画（UI §13.3）。
+ * ============================================================================= */
+
+.careers-app {
+  /* ============ Color（UI §13.2 / §14） ============ */
+  --rc-color-primary: #2563eb;
+  --rc-color-primary-dark: #1d4ed8;
+  --rc-color-accent: #f59e0b;
+  --rc-color-accent-2: #f97316;
+  --rc-color-success: #16a34a;
+  --rc-color-warning: #f59e0b;
+  --rc-color-error: #dc2626;
+  --rc-color-info: #0ea5e9;
+
+  --rc-color-text: #0f172a;
+  --rc-color-text-secondary: #64748b;
+  --rc-color-text-muted: #94a3b8;
+
+  --rc-color-border: #e2e8f0;
+  --rc-color-border-strong: #cbd5e1;
+  --rc-color-bg: #f8fafc;
+  --rc-color-surface: #ffffff;
+
+  --rc-color-hero-from: #0b1225;
+  --rc-color-hero-to: #1e3a8a;
+
+  --rc-color-disabled-bg: #e2e8f0;
+  --rc-color-disabled-text: #94a3b8;
+
+  --rc-color-warning-bg: #fef3c7;
+  --rc-color-warning-text: #b45309;
+  --rc-color-error-bg: #fef2f2;
+
+  /* ============ Typography（UI §13.1） ============ */
+  --rc-font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial,
+    sans-serif;
+  --rc-font-size-xs: 12px;
+  --rc-font-size-sm: 14px;
+  --rc-font-size-base: 16px;
+  --rc-font-size-lg: 19px;
+  --rc-font-size-xl: 24px;
+  --rc-font-size-2xl: 32px;
+  --rc-font-size-3xl: 40px;
+  --rc-font-size-hero: 56px;
+
+  --rc-font-weight-regular: 400;
+  --rc-font-weight-medium: 500;
+  --rc-font-weight-semibold: 600;
+  --rc-font-weight-bold: 700;
+  --rc-font-weight-extrabold: 800;
+
+  --rc-line-height-tight: 1.2;
+  --rc-line-height-normal: 1.5;
+  --rc-line-height-relaxed: 1.7;
+
+  /* ============ Radius ============ */
+  --rc-radius-sm: 8px;
+  --rc-radius-md: 12px;
+  --rc-radius-lg: 16px;
+  --rc-radius-xl: 22px;
+  --rc-radius-pill: 999px;
+
+  /* ============ Spacing ============ */
+  --rc-space-1: 4px;
+  --rc-space-2: 8px;
+  --rc-space-3: 12px;
+  --rc-space-4: 16px;
+  --rc-space-5: 20px;
+  --rc-space-6: 24px;
+  --rc-space-8: 32px;
+  --rc-space-10: 40px;
+  --rc-space-12: 48px;
+  --rc-space-16: 64px;
+  --rc-space-24: 96px;
+
+  /* ============ Shadow ============ */
+  --rc-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --rc-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --rc-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --rc-shadow-xl: 0 24px 60px rgba(15, 23, 42, 0.18);
+
+  /* ============ Layout ============ */
+  --rc-container-max: 1280px;
+  --rc-header-height: 72px;
+
+  /* ============ Motion ============ */
+  --rc-duration-fast: 150ms;
+  --rc-duration-base: 250ms;
+
+  /* 与现有全局样式（global.css :focus-visible）桥接，聚焦环改为招聘官网主色 */
+  --color-focus-ring: rgba(37, 99, 235, 0.18);
+
+  /* ============ 基础排版 ============ */
+  position: relative;
+  min-height: 100%;
+  font-family: var(--rc-font-family);
+  font-size: var(--rc-font-size-base);
+  line-height: var(--rc-line-height-relaxed);
+  color: var(--rc-color-text);
+  background-color: var(--rc-color-surface);
+}
+
+.careers-app *,
+.careers-app *::before,
+.careers-app *::after {
+  box-sizing: border-box;
+}
+
+/* =============================================================================
+ * 布局：容器 / 区块
+ * ============================================================================= */
+.rc-container {
+  width: 100%;
+  max-width: var(--rc-container-max);
+  margin: 0 auto;
+  padding: 0 var(--rc-space-20, 80px);
+}
+
+.rc-section {
+  padding: var(--rc-space-24) 0;
+}
+
+.rc-section--tight {
+  padding: var(--rc-space-16) 0;
+}
+
+.rc-section__label {
+  margin: 0 0 var(--rc-space-3);
+  font-size: 15px;
+  font-weight: var(--rc-font-weight-bold);
+  letter-spacing: 1px;
+  color: var(--rc-color-accent);
+}
+
+.rc-section__title {
+  margin: 0;
+  font-size: var(--rc-font-size-3xl);
+  font-weight: var(--rc-font-weight-extrabold);
+  line-height: var(--rc-line-height-tight);
+  color: var(--rc-color-text);
+}
+
+.rc-section__desc {
+  margin: var(--rc-space-4) 0 0;
+  font-size: var(--rc-font-size-base);
+  color: var(--rc-color-text-secondary);
+}
+
+.rc-section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--rc-space-6);
+  margin-bottom: var(--rc-space-10);
+}
+
+.rc-section__link {
+  flex: none;
+  font-size: var(--rc-font-size-base);
+  font-weight: var(--rc-font-weight-semibold);
+  color: var(--rc-color-primary);
+  text-decoration: none;
+  transition: color var(--rc-duration-fast) ease;
+}
+
+.rc-section__link:hover {
+  color: var(--rc-color-primary-dark);
+  text-decoration: underline;
+}
+
+/* =============================================================================
+ * 按钮（UI §6 / 视觉稿：pill 圆角，主按钮为强调渐变）
+ * ============================================================================= */
+.rc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rc-space-2);
+  height: 44px;
+  padding: 0 var(--rc-space-6);
+  border: 1px solid transparent;
+  border-radius: var(--rc-radius-pill);
+  font-family: inherit;
+  font-size: var(--rc-font-size-base);
+  font-weight: var(--rc-font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--rc-duration-fast) ease, border-color var(--rc-duration-fast) ease,
+    color var(--rc-duration-fast) ease, transform var(--rc-duration-fast) ease,
+    box-shadow var(--rc-duration-fast) ease;
+}
+
+.rc-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.rc-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.rc-btn--sm {
+  height: 36px;
+  padding: 0 var(--rc-space-4);
+  font-size: var(--rc-font-size-sm);
+}
+
+.rc-btn--lg {
+  height: 54px;
+  padding: 0 var(--rc-space-8);
+  font-size: 17px;
+}
+
+.rc-btn--block {
+  width: 100%;
+}
+
+/* 主按钮：品牌蓝 */
+.rc-btn--primary {
+  background-color: var(--rc-color-primary);
+  color: #ffffff;
+}
+
+.rc-btn--primary:hover:not(:disabled) {
+  background-color: var(--rc-color-primary-dark);
+}
+
+/* 强调按钮：橙金渐变（Hero CTA） */
+.rc-btn--gradient {
+  background-image: linear-gradient(90deg, var(--rc-color-accent), var(--rc-color-accent-2));
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.28);
+}
+
+.rc-btn--gradient:hover:not(:disabled) {
+  box-shadow: 0 10px 26px rgba(249, 115, 22, 0.36);
+}
+
+/* 次按钮：描边 */
+.rc-btn--secondary {
+  background-color: var(--rc-color-surface);
+  border-color: var(--rc-color-border-strong);
+  color: var(--rc-color-text);
+}
+
+.rc-btn--secondary:hover:not(:disabled) {
+  border-color: var(--rc-color-primary);
+  color: var(--rc-color-primary);
+}
+
+/* 次按钮（深色底上用） */
+.rc-btn--outline-light {
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #e2e8f0;
+}
+
+.rc-btn--outline-light:hover:not(:disabled) {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.rc-btn--ghost {
+  background-color: transparent;
+  color: var(--rc-color-text-secondary);
+  font-weight: var(--rc-font-weight-medium);
+}
+
+.rc-btn--ghost:hover:not(:disabled) {
+  background-color: #f1f5f9;
+  color: var(--rc-color-text);
+}
+
+.rc-btn:disabled {
+  background-color: var(--rc-color-disabled-bg);
+  background-image: none;
+  border-color: transparent;
+  color: var(--rc-color-disabled-text);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+ * 标签 Tag
+ * ============================================================================= */
+.rc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: var(--rc-radius-pill);
+  font-size: 13px;
+  font-weight: var(--rc-font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.rc-tag--tech {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+.rc-tag--product {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+.rc-tag--design {
+  background-color: #fce7f3;
+  color: #be185d;
+}
+.rc-tag--operation {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+.rc-tag--function {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+.rc-tag--neutral {
+  background-color: #f1f5f9;
+  color: var(--rc-color-text-secondary);
+}
+.rc-tag--hot {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+.rc-tag--closed {
+  background-color: var(--rc-color-disabled-bg);
+  color: var(--rc-color-text-secondary);
+}
+
+/* =============================================================================
+ * 表单元素（投递表单）
+ * ============================================================================= */
+.rc-field {
+  margin-bottom: var(--rc-space-5);
+}
+
+.rc-label {
+  display: block;
+  margin-bottom: var(--rc-space-2);
+  font-size: var(--rc-font-size-sm);
+  font-weight: var(--rc-font-weight-semibold);
+  color: #334155;
+}
+
+.rc-label__required {
+  color: var(--rc-color-error);
+}
+
+.rc-input,
+.rc-select {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--rc-space-4);
+  border: 1px solid var(--rc-color-border);
+  border-radius: var(--rc-radius-md);
+  background-color: var(--rc-color-surface);
+  font-family: inherit;
+  font-size: var(--rc-font-size-sm);
+  color: var(--rc-color-text);
+  transition: border-color var(--rc-duration-fast) ease, box-shadow var(--rc-duration-fast) ease;
+}
+
+.rc-input::placeholder {
+  color: var(--rc-color-text-muted);
+}
+
+.rc-input:focus,
+.rc-select:focus {
+  outline: none;
+  border-color: var(--rc-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.rc-select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%2394a3b8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 6.4 8 10.2l3.8-3.8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+.rc-input.is-error,
+.rc-select.is-error {
+  border-color: var(--rc-color-error);
+}
+
+.rc-field__error {
+  margin: var(--rc-space-2) 0 0;
+  font-size: 13px;
+  color: var(--rc-color-error);
+}
+
+.rc-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rc-space-2);
+  font-size: 13px;
+  color: var(--rc-color-text-secondary);
+  cursor: pointer;
+}
+
+.rc-checkbox input {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--rc-color-primary);
+  cursor: pointer;
+}
+
+/* 上传区 */
+.rc-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 112px;
+  padding: var(--rc-space-5);
+  border: 1px dashed var(--rc-color-border-strong);
+  border-radius: var(--rc-radius-md);
+  background-color: var(--rc-color-bg);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--rc-duration-fast) ease, background-color var(--rc-duration-fast) ease;
+}
+
+.rc-upload:hover,
+.rc-upload.is-dragover {
+  border-color: var(--rc-color-primary);
+  background-color: #eff6ff;
+}
+
+.rc-upload.is-error {
+  border-color: var(--rc-color-error);
+}
+
+.rc-upload__hint {
+  font-size: var(--rc-font-size-sm);
+  font-weight: var(--rc-font-weight-semibold);
+  color: var(--rc-color-primary);
+}
+
+.rc-upload__sub {
+  font-size: var(--rc-font-size-xs);
+  color: var(--rc-color-text-muted);
+}
+
+.rc-upload__file {
+  display: flex;
+  align-items: center;
+  gap: var(--rc-space-2);
+  margin-top: var(--rc-space-3);
+  padding: var(--rc-space-2) var(--rc-space-3);
+  border-radius: var(--rc-radius-sm);
+  background-color: #eff6ff;
+  font-size: 13px;
+  color: var(--rc-color-primary-dark);
+}
+
+.rc-upload__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: var(--rc-radius-pill);
+  background-color: transparent;
+  color: var(--rc-color-text-secondary);
+  cursor: pointer;
+}
+
+.rc-upload__remove:hover {
+  background-color: rgba(15, 23, 42, 0.08);
+  color: var(--rc-color-text);
+}
+
+/* =============================================================================
+ * 骨架屏（UI §6.11）
+ * ============================================================================= */
+.rc-skeleton {
+  background-image: linear-gradient(90deg, #eef2f7 25%, #e2e8f0 37%, #eef2f7 63%);
+  background-size: 400% 100%;
+  border-radius: var(--rc-radius-sm);
+  animation: rc-shimmer 1.4s ease infinite;
+}
+
+@keyframes rc-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* =============================================================================
+ * 空状态（UI §6.10）
+ * ============================================================================= */
+.rc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rc-space-4);
+  padding: var(--rc-space-16) var(--rc-space-6);
+  text-align: center;
+}
+
+.rc-empty__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-image: linear-gradient(135deg, #eff6ff, #e0e7ff);
+  color: var(--rc-color-primary);
+}
+
+.rc-empty__title {
+  font-size: var(--rc-font-size-lg);
+  font-weight: var(--rc-font-weight-bold);
+  color: var(--rc-color-text);
+}
+
+.rc-empty__desc {
+  margin: 0;
+  font-size: var(--rc-font-size-sm);
+  color: var(--rc-color-text-secondary);
+}
+
+/* =============================================================================
+ * 分页（UI §6.5）
+ * ============================================================================= */
+.rc-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rc-space-2);
+  margin-top: var(--rc-space-10);
+}
+
+.rc-pagination__btn {
+  min-width: 40px;
+  height: 36px;
+  padding: 0 var(--rc-space-3);
+  border: 1px solid var(--rc-color-border);
+  border-radius: var(--rc-radius-sm);
+  background-color: var(--rc-color-surface);
+  font-family: inherit;
+  font-size: var(--rc-font-size-sm);
+  color: #475569;
+  cursor: pointer;
+  transition: border-color var(--rc-duration-fast) ease, color var(--rc-duration-fast) ease,
+    background-color var(--rc-duration-fast) ease;
+}
+
+.rc-pagination__btn:hover:not(:disabled):not(.is-active) {
+  border-color: var(--rc-color-primary);
+  color: var(--rc-color-primary);
+}
+
+.rc-pagination__btn.is-active {
+  border-color: var(--rc-color-primary);
+  background-color: var(--rc-color-primary);
+  color: #ffffff;
+  font-weight: var(--rc-font-weight-bold);
+}
+
+.rc-pagination__btn:disabled {
+  color: var(--rc-color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* =============================================================================
+ * 抽屉 / 遮罩（投递表单，UI §6.6）
+ * ============================================================================= */
+.rc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background-color: rgba(15, 23, 42, 0.45);
+  animation: rc-fade-in var(--rc-duration-base) ease;
+}
+
+.rc-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 901;
+  display: flex;
+  flex-direction: column;
+  width: 520px;
+  max-width: 100vw;
+  background-color: var(--rc-color-surface);
+  box-shadow: var(--rc-shadow-xl);
+  animation: rc-slide-in-right var(--rc-duration-base) ease;
+}
+
+@keyframes rc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rc-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes rc-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* =============================================================================
+ * 面包屑
+ * ============================================================================= */
+.rc-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--rc-space-2);
+  font-size: var(--rc-font-size-sm);
+  color: var(--rc-color-text-muted);
+}
+
+.rc-breadcrumb__link {
+  color: var(--rc-color-text-muted);
+  text-decoration: none;
+  transition: color var(--rc-duration-fast) ease;
+}
+
+.rc-breadcrumb__link:hover {
+  color: var(--rc-color-primary);
+}
+
+/* =============================================================================
+ * 页面进入动效（UI §17）
+ * ============================================================================= */
+@keyframes rc-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rc-fade-up {
+  animation: rc-fade-up var(--rc-duration-base) ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-fade-up,
+  .rc-overlay,
+  .rc-drawer {
+    animation: none;
+  }
+}
+
+/* =============================================================================
+ * 响应式（UI §12）
+ * ============================================================================= */
+@media (max-width: 1439px) {
+  .rc-container {
+    padding: 0 var(--rc-space-10);
+  }
+}
+
+@media (max-width: 1279px) {
+  .rc-container {
+    padding: 0 var(--rc-space-8);
+  }
+
+  .rc-section {
+    padding: var(--rc-space-16) 0;
+  }
+}
+
+@media (max-width: 1023px) {
+  .rc-container {
+    padding: 0 var(--rc-space-6);
+  }
+
+  .rc-section__title {
+    font-size: var(--rc-font-size-2xl);
+  }
+
+  .rc-drawer {
+    width: 460px;
+  }
+}
+
+@media (max-width: 767px) {
+  .rc-container {
+    padding: 0 var(--rc-space-5);
+  }
+
+  .rc-section {
+    padding: var(--rc-space-12) 0;
+  }
+
+  .rc-section__title {
+    font-size: 26px;
+  }
+
+  .rc-section__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--rc-space-3);
+    margin-bottom: var(--rc-space-6);
+  }
+
+  /* 移动端：投递面板改为底部抽屉（UI §12） */
+  .rc-drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-height: 92vh;
+    border-radius: var(--rc-radius-xl) var(--rc-radius-xl) 0 0;
+    animation: rc-slide-up var(--rc-duration-base) ease;
+  }
+}
