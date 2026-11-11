@@ -62,7 +62,7 @@ onMounted(() => {
       {{ label }}<span v-if="required" class="app-field__required">*</span>
     </span>
 
-    <span class="app-field__control">
+    <span class="app-field__control" :class="{ 'is-password': isPassword }">
       <input
         ref="inputRef"
         class="app-field__input"
@@ -80,6 +80,11 @@ onMounted(() => {
         @focus="emit('focus')"
       />
 
+      <!--
+        密码可见性切换：全项目唯一的眼睛按钮。
+        如果界面上出现两个眼睛，另一个一定来自浏览器原生控件或密码管理器扩展，
+        不是这个组件渲染的（见下方 ::-ms-reveal 说明）。
+      -->
       <button
         v-if="isPassword"
         type="button"
@@ -137,6 +142,32 @@ onMounted(() => {
   transition: border-color var(--duration-fast) var(--easing-standard),
     box-shadow var(--duration-fast) var(--easing-standard),
     background-color var(--duration-fast) var(--easing-standard);
+}
+
+/*
+ * 密码框右侧要为眼睛按钮留出空间。
+ *
+ * 原实现 padding 只有 18px，而按钮从 right:14px 起占 16px（到 30px），
+ * 密码一长文字就会跑到按钮下面被遮住。
+ * 44px = 12(间距) + 16(按钮) + 16(右内边距)，够放且不显空。
+ */
+.app-field__control.is-password .app-field__input {
+  padding-right: 44px;
+}
+
+/*
+ * 隐藏浏览器原生的「显示密码」按钮（Edge / IE，Windows 上的 Chrome 也会出现）。
+ *
+ * 这是我们组件之外的第二只眼睛的常见来源：
+ * 它渲染在 input 内部，普通 DOM 选择器选不到，只能用 UA 私有伪元素关掉。
+ * 我们自己的按钮已经提供了同样的功能，所以隐藏它不会造成功能缺失。
+ *
+ * 注意：密码管理器扩展（1Password / Bitwarden 等）注入的图标无法用 CSS 去掉，
+ * 那种情况需要在扩展侧关闭「在输入框内显示图标」。
+ */
+.app-field__input::-ms-reveal,
+.app-field__input::-ms-clear {
+  display: none;
 }
 
 .app-field__input::placeholder {

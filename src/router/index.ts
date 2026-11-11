@@ -47,40 +47,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ChatView.vue'),
     meta: { requiresAuth: true }
   },
-
-  /* ==================== 招聘官网（Careers Site） ==================== */
-  {
-    path: '/careers',
-    component: () => import('@/layouts/CareersLayout.vue'),
-    children: [
-      {
-        path: '',
-        name: 'careers-home',
-        component: () => import('@/views/recruitment/CareersHomeView.vue')
-      },
-      {
-        path: 'jobs',
-        name: 'careers-jobs',
-        component: () => import('@/views/recruitment/CareersJobsView.vue')
-      },
-      {
-        path: 'jobs/:id',
-        name: 'careers-job-detail',
-        component: () => import('@/views/recruitment/CareersJobDetailView.vue')
-      },
-      {
-        path: 'my-applications',
-        name: 'careers-my-applications',
-        component: () => import('@/views/recruitment/CareersMyApplicationsView.vue')
-      },
-      {
-        path: ':pathMatch(.*)*',
-        name: 'careers-not-found',
-        component: () => import('@/views/recruitment/CareersNotFoundView.vue')
-      }
-    ]
-  },
-
   {
     path: '/:pathMatch(.*)*',
     redirect: '/chat'
