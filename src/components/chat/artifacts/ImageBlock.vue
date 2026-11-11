@@ -7,13 +7,18 @@
  *
  * 点击放大复用现有 FilePreviewModal（用户要求「图片放大用现有的」），
  * 不新增第二套图片预览弹窗。
+ *
+ * 图片加载走 AppAuthedImage（fetch + 令牌 → object URL）：
+ * <img src> 无法携带 Authorization 头，而后端文件路由只认请求头，
+ * 直接用 src 会稳定 401（BUG-02）。
  */
 import { computed, ref } from 'vue'
+import AppAuthedImage from '@/components/common/AppAuthedImage.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import FilePreviewModal from '@/components/chat/FilePreviewModal.vue'
 import type { Attachment } from '@/types'
 import { formatFileSize } from '@/utils/format'
-import { downloadAuthedFile, withAuthToken } from '@/utils/file'
+import { downloadAuthedFile } from '@/utils/file'
 import { useToast } from '@/composables/useToast'
 
 const props = defineProps<{ attachment: Attachment }>()
@@ -26,9 +31,6 @@ const loadFailed = ref(false)
 
 /** 图片地址：优先预览地址，其次下载地址 */
 const imageUrl = computed(() => props.attachment.previewUrl || props.attachment.url)
-
-/** <img> 无法携带 Authorization 头，缩略图地址补 ?token= */
-const imageSrc = computed(() => (imageUrl.value ? withAuthToken(imageUrl.value) : ''))
 
 /** 放大弹窗使用的附件（FilePreviewModal 内部用 fetch 带请求头拉取） */
 const previewAttachment = computed<Attachment>(() => ({
@@ -73,11 +75,10 @@ const handleDownload = async (): Promise<void> => {
       :aria-label="`放大查看 ${attachment.name}`"
       @click="openPreview"
     >
-      <img
+      <AppAuthedImage
         class="image-block__img"
-        :src="imageSrc"
+        :src="imageUrl"
         :alt="attachment.name"
-        loading="lazy"
         @error="loadFailed = true"
       />
     </button>

@@ -1,28 +1,28 @@
 <script setup lang="ts">
 /**
- * 文件产物卡片（挂在对应 AI 消息下方）
+ * 文件产物卡片（挂在对应 AI 消息下方，作为「无法识别类型」的兜底）
  *
  * 数据来源：
- *   1) 流式生成时后端 SSE 下发的 `event: artifact`，例如
- *      {"id":"22","messageId":231,"name":"8.txt",
- *       "type":"text/plain; charset=utf-8","size":37,
- *       "url":"/api/chat/files/22/download"}
- *   2) 打开历史会话时历史消息接口返回的 `files` 字段（结构同上）
+ *   1) 流式生成时后端 SSE 下发的 `event: artifact`
+ *   2) 打开历史会话时历史消息接口返回的 `files` 字段
  *
  * 卡片完全由附件数据驱动（不做「正文里出现 .txt 就当文件」这类猜测）：
- *   - 图标：按扩展名 / MIME 区分格式（文本 / 代码 / 表格 / 压缩包 / 图片 /
- *           PDF / 文档 / 演示文稿 / 音频 / 视频 / 通用）
- *   - 名称：name
- *   - 类型 · 大小：扩展名大写 + size（例如 TXT · 37 B）
+ *   - 图标：按扩展名 / MIME 区分格式
+ *   - 名称 / 类型 · 大小
  *   - 下载：点击直接请求后端给的 url（自动携带登录令牌）
  *   - 预览：优先 previewUrl，后端未提供则回退用 url
+ *
+ * 缩略图走 AppAuthedImage（fetch + 令牌 → object URL）：
+ * <img src> 无法携带 Authorization 头，而后端文件路由只认请求头，
+ * 用 `?token=` 也不被接受 → 会 401（BUG-02）。
  */
 import { computed, ref } from 'vue'
+import AppAuthedImage from '@/components/common/AppAuthedImage.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import FilePreviewModal from './FilePreviewModal.vue'
 import type { Attachment } from '@/types'
 import { formatFileSize } from '@/utils/format'
-import { downloadAuthedFile, withAuthToken } from '@/utils/file'
+import { downloadAuthedFile } from '@/utils/file'
 import { getFileIcon, getFileKind, getFileTypeLabel } from '@/utils/fileType'
 import { useToast } from '@/composables/useToast'
 
@@ -48,13 +48,6 @@ const previewAttachment = computed<Attachment>(() => ({
   ...props.attachment,
   url: previewTarget.value
 }))
-
-/** 缩略图地址（浏览器直接请求，需带上登录令牌） */
-const thumbSrc = computed(() =>
-  props.attachment.url || props.attachment.previewUrl
-    ? withAuthToken(previewTarget.value)
-    : ''
-)
 
 /** 有访问地址才可预览 / 下载 */
 const canAccess = computed(() =>
@@ -107,10 +100,10 @@ const handleDownload = async (): Promise<void> => {
 <template>
   <div class="file-card">
     <div class="file-card__icon" :class="`is-${kind}`">
-      <img
-        v-if="isImage && thumbSrc && !thumbFailed"
+      <AppAuthedImage
+        v-if="isImage && previewTarget && !thumbFailed"
         class="file-card__thumb"
-        :src="thumbSrc"
+        :src="previewTarget"
         :alt="title"
         @error="thumbFailed = true"
       />

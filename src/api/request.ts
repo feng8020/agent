@@ -4,11 +4,14 @@
  * 全项目共用此唯一实例，不要新建第二套封装。
  * 登录令牌通过请求拦截器写入 Authorization 头。
  *
- * 401 处理（本次需求）：
- *   401 表示登录态已失效，必须立即离开需要登录的内部页面，
- *   由 utils/authRedirect 通知应用层执行 `router.replace('/login')`。
- *   登录 / 注册 / 退出接口的 401 属于业务失败（如密码错误），
- *   不触发该逻辑，否则会把正在登录页操作的用户反复踢出。
+ * 401 处理：
+ *   401 有两种完全不同的含义，必须区分（BUG-01）：
+ *   1. 登录态失效  → 立即离开内部页面，由 utils/authRedirect 通知应用层
+ *                    执行 `router.replace('/login')`，文案「登录已失效，请重新登录」
+ *   2. 业务鉴权失败（登录时账号或密码错误、令牌已失效时的登出）
+ *                  → 属于业务失败，必须**原样保留后端 message**，
+ *                    既不跳转登录页，也不能套用「登录已失效」的文案，
+ *                    否则用户会误以为自己的会话过期了。
  */
 import axios, { AxiosError, type AxiosInstance } from 'axios'
 import type { ApiError } from '@/types'
@@ -26,7 +29,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
  * - /auth/register    注册被拒绝
  * - /auth/logout      令牌已失效时的登出，本地清理已足够
  *
- * 命中白名单时不得触发跳转登录页。
+ * 命中白名单时：使用后端返回的 message，且不触发跳转登录页。
  */
 const AUTH_EXEMPT_PATHS: readonly string[] = [
   '/auth/user/login',
@@ -141,15 +144,18 @@ http.interceptors.response.use(
         data?: { message?: string; code?: string | number; field?: string }
       }
 
-      // 未登录 / 凭证失效 → 立即离开内部页面（UI §11 权限表现）
-      //
-      // 认证接口的 401 属于业务错误（例如密码错误），
-      // 通过 unauthorized: false 豁免，避免把用户从登录页踢走。
+      // 401：区分「登录态失效」与「业务鉴权失败」（BUG-01）
       if (status === 401) {
+        const exempt = isAuthExemptPath(error.config?.url)
+
+        // 认证接口：保留后端原文（例如「用户名或密码错误」），
+        // 不能覆盖成「登录已失效」，否则用户会误判为会话过期。
+        const message = exempt
+          ? data?.message || '用户名或密码错误'
+          : '登录已失效，请重新登录'
+
         return Promise.reject(
-          createApiError('登录已失效，请重新登录', 401, undefined, {
-            unauthorized: !isAuthExemptPath(error.config?.url)
-          })
+          createApiError(message, 401, data?.field, { unauthorized: !exempt })
         )
       }
 

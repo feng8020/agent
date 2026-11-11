@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
+import AppAuthedImage from '@/components/common/AppAuthedImage.vue'
 import AppAvatar from '@/components/common/AppAvatar.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
@@ -74,7 +75,8 @@ const submitEdit = (): void => {
 
           <div v-if="attachments.length" class="message__attachments">
             <template v-for="item in attachments" :key="item.id">
-              <img
+              <!-- 图片走 AppAuthedImage：<img src> 无法带 Authorization 头 → 401（BUG-02） -->
+              <AppAuthedImage
                 v-if="item.type === 'image' && item.url"
                 class="message__attachment-image"
                 :src="item.url"

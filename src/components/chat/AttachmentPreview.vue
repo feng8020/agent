@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppAuthedImage from '@/components/common/AppAuthedImage.vue'
 import type { PendingAttachment } from '@/types'
 import { formatFileSize } from '@/utils/format'
 
@@ -15,7 +16,16 @@ const emit = defineEmits<{
   <!-- 附件预览项（UI §6.6、§9.5：上传中 / 成功 / 失败三态） -->
   <div class="attachment" :class="`is-${attachment.status}`">
     <template v-if="attachment.type === 'image'">
-      <img v-if="attachment.url" class="attachment__thumb" :src="attachment.url" :alt="attachment.name" />
+      <!--
+        图片走 AppAuthedImage：<img src> 无法携带 Authorization 头，
+        后端文件路由只认请求头 → 直接用 src 会 401（BUG-02）。
+      -->
+      <AppAuthedImage
+        v-if="attachment.url"
+        class="attachment__thumb"
+        :src="attachment.url"
+        :alt="attachment.name"
+      />
       <div v-else class="attachment__thumb attachment__thumb--placeholder">
         <AppIcon name="image" :size="18" />
       </div>
