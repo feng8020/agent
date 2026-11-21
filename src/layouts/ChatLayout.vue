@@ -2,9 +2,10 @@
 /**
  * 聊天页布局：侧边栏 + 主区 +（可选）右侧预览区
  *
- * 右侧 aside 有两种内容，靠 previewVariant 区分（不新建第二个侧栏）：
- * - test     ：Tester Agent 的浏览器实时画面（原有能力，桌面分栏 / 移动端右下浮窗）
+ * 右侧 aside 有三种内容，靠 previewVariant 区分（不新建第二个侧栏）：
+ * - test     ：Tester Agent 的浏览器实时画面（桌面分栏 / 移动端右下浮窗）
  * - artifact ：产物预览（网页 / 前端项目 / 前后端项目），移动端铺成全屏覆盖
+ * - result   ：测试结果（概览 / 用例 / 缺陷 / 过程 / 产物），移动端同样铺成全屏
  *
  * 宽度：clamp(360px, 30vw, 70vw)。
  * 原实现上限 460px 在 1920px 视口下只有 24%，不满足「占据 30% 或更多」的要求。
@@ -18,7 +19,7 @@ withDefaults(
     /** 右侧预览区是否展开：关闭时 slot 完全不渲染，聊天区占满宽度 */
     previewOpen?: boolean
     /** 右侧预览区内容类型 */
-    previewVariant?: 'artifact' | 'test'
+    previewVariant?: 'artifact' | 'test' | 'result'
   }>(),
   { previewOpen: false, previewVariant: 'test' }
 )
@@ -74,7 +75,7 @@ const emit = defineEmits<{ (e: 'close-drawer'): void }>()
   height: 100%;
 }
 
-/* 桌面端：产物预览与测试画面共用同一块区域，宽度下限 360 / 首选 30vw / 上限 70vw */
+/* 桌面端：产物预览 / 测试画面 / 测试结果共用同一块区域，宽度下限 360 / 首选 30vw / 上限 70vw */
 .chat-layout__preview {
   flex: none;
   width: clamp(
@@ -91,9 +92,10 @@ const emit = defineEmits<{ (e: 'close-drawer'): void }>()
   display: none;
 }
 
-/* 平板：面板覆盖主区（侧边栏仍可见），避免两侧都不可读 */
+/* 平板：产物预览与测试结果覆盖主区（侧边栏仍可见），避免两侧都不可读 */
 @media (min-width: 768px) and (max-width: 1023px) {
-  .chat-layout__preview[data-variant='artifact'] {
+  .chat-layout__preview[data-variant='artifact'],
+  .chat-layout__preview[data-variant='result'] {
     position: fixed;
     top: 0;
     right: 0;
@@ -150,8 +152,9 @@ const emit = defineEmits<{ (e: 'close-drawer'): void }>()
     background-color: var(--color-surface);
   }
 
-  /* 产物预览：全屏覆盖（产品需求 §6.1：窄屏不使用 30% 分栏） */
-  .chat-layout__preview[data-variant='artifact'] {
+  /* 产物预览 / 测试结果：全屏覆盖（产品需求 §6.1：窄屏不使用 30% 分栏） */
+  .chat-layout__preview[data-variant='artifact'],
+  .chat-layout__preview[data-variant='result'] {
     position: fixed;
     inset: 0;
     z-index: var(--z-overlay);

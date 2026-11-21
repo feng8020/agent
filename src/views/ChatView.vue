@@ -10,8 +10,10 @@ import Composer from '@/components/chat/Composer.vue'
 import MessageList from '@/components/chat/MessageList.vue'
 import ArtifactPreviewPanel from '@/components/chat/ArtifactPreviewPanel.vue'
 import TestBrowserPreview from '@/components/test/TestBrowserPreview.vue'
+import TestResultPanel from '@/components/test/TestResultPanel.vue'
 import ChatLayout from '@/layouts/ChatLayout.vue'
 import { useBrowserPreview } from '@/composables/useBrowserPreview'
+import { useTestRunResult } from '@/composables/useTestRunResult'
 import { useArtifactPreview } from '@/composables/useArtifactPreview'
 import { useConversationSearch } from '@/composables/useConversationSearch'
 import { useProjectDelivery } from '@/composables/useProjectDelivery'
@@ -21,6 +23,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useThemeStore } from '@/stores/theme'
 import type { ArtifactKind, Attachment, Conversation, Message, PendingAttachment } from '@/types'
+import type { TestStatus } from '@/types/test'
 import { ARTIFACT_KIND_LABELS, canPreviewInPanel } from '@/utils/artifact'
 import { copyText } from '@/utils/clipboard'
 
@@ -75,6 +78,29 @@ const {
   hide: hideTestPreview
 } = useBrowserPreview()
 
+/** 测试结果面板开关（视图局部，不进 store） */
+const testResultOpen = ref(false)
+
+/**
+ * 当前会话的测试结果（持久化 + 实时过程）
+ *
+ * hasTestResult 决定顶部是否出现「测试结果」入口；
+ * run / events / artifacts 直接交给 TestResultPanel 渲染。
+ */
+const {
+  run: testRun,
+  loading: testRunLoading,
+  error: testRunError,
+  events: testEvents,
+  eventsError: testEventsError,
+  artifacts: testArtifacts,
+  liveStatus: testLiveStatus,
+  hasResult: hasTestResult,
+  loadLatest: loadTestResult,
+  refresh: refreshTestResult,
+  downloadArtifact: downloadTestArtifact
+} = useTestRunResult()
+
 /** 侧边栏收缩状态本地记忆（UI §9.7） */
 const SIDEBAR_KEY = 'ai-chat:sidebar-collapsed'
 
@@ -109,11 +135,15 @@ const handleScrollToBottom = (): void => {
 
 /* ---------------- 右侧预览：模式与内容 ---------------- */
 
-const previewVisible = computed(() => artifactPreview.open.value || testPreviewVisible.value)
-
-const previewVariant = computed<'artifact' | 'test'>(() =>
-  artifactPreview.open.value ? 'artifact' : 'test'
+const previewVisible = computed(
+  () => artifactPreview.open.value || testResultOpen.value || testPreviewVisible.value
 )
+
+const previewVariant = computed<'artifact' | 'test' | 'result'>(() => {
+  if (artifactPreview.open.value) return 'artifact'
+  if (testResultOpen.value) return 'result'
+  return 'test'
+})
 
 /** 面板打开且处于紧凑桌面区间时，侧边栏临时收缩为图标栏（不写回偏好） */
 const layoutCollapsed = computed(
@@ -293,6 +323,7 @@ watch(
  */
 watch(() => chat.currentId, () => {
   artifactPreview.reset()
+  testResultOpen.value = false
   disarmAutoOpen()
 })
 
@@ -348,6 +379,39 @@ watch(
   { immediate: true }
 )
 
+/**
+ * 会话切换时加载该会话最近一次测试
+ *
+ * 404（无记录）已由 api 层归一化为 null，这里不视为错误，
+ * 因此「没有测试结果」不会弹提示。
+ */
+watch(
+  () => chat.currentId,
+  (id) => {
+    void loadTestResult(id ?? '')
+  },
+  { immediate: true }
+)
+
+/** 测试是否已进入终态 */
+const isRunFinished = (status: TestStatus | ''): boolean =>
+  status === 'passed' || status === 'failed' || status === 'blocked' || status === 'skipped'
+
+/**
+ * 画面出现 = Tester 正在执行浏览器测试 → 补拉一次测试记录
+ *
+ * 后端创建 TestRun 不会主动通知前端，只能借助画面流作为信号；
+ * 已存在「进行中」的记录时不重复拉取，避免清空已收到的事件时间线。
+ */
+watch(testPreviewVisible, (visible) => {
+  if (!visible) return
+
+  const currentStatus = testLiveStatus.value || testRun.value?.status || ''
+  if (!testRun.value || isRunFinished(currentStatus)) {
+    void loadTestResult(chat.currentId ?? '')
+  }
+})
+
 /* ---------------- 右侧预览操作 ---------------- */
 
 /** 消息块里的「在右侧预览」 */
@@ -378,6 +442,20 @@ const handlePanelClose = (): void => {
 
 const handlePanelDownload = async (): Promise<void> => {
   await downloadSource()
+}
+
+/** 顶部「测试结果」入口：打开面板并刷新一次，避免看到过期的汇总 */
+const handleOpenTestResult = (): void => {
+  testResultOpen.value = true
+  void refreshTestResult()
+}
+
+const handleTestResultClose = (): void => {
+  testResultOpen.value = false
+}
+
+const handleTestResultRetry = (): void => {
+  void loadTestResult(chat.currentId ?? '')
 }
 
 /* ---------------- 侧边栏 ---------------- */
@@ -565,8 +643,10 @@ const confirmLogout = async (): Promise<void> => {
       :title="chat.currentTitle"
       :can-preview="canPreview"
       :can-download="canDownload"
+      :has-test-result="hasTestResult"
       @preview="handleHeaderPreview"
       @download="downloadSource"
+      @test-result="handleOpenTestResult"
       @toggle-theme="handleToggleTheme"
       @toggle-sidebar="drawerOpen = true"
     />
@@ -607,7 +687,7 @@ const confirmLogout = async (): Promise<void> => {
 
     <Composer :is-generating="chat.isGenerating" @send="handleSend" @stop="chat.stopGeneration()" />
 
-    <!-- 右侧预览区：产物预览 / 测试画面 共用同一个 aside -->
+    <!-- 右侧预览区：产物预览 / 测试画面 / 测试结果 共用同一个 aside -->
     <template #preview>
       <ArtifactPreviewPanel
         v-if="previewVariant === 'artifact'"
@@ -618,6 +698,21 @@ const confirmLogout = async (): Promise<void> => {
         :show-download="panelShowDownload"
         @close="handlePanelClose"
         @download="handlePanelDownload"
+      />
+
+      <TestResultPanel
+        v-else-if="previewVariant === 'result'"
+        :run="testRun"
+        :loading="testRunLoading"
+        :error="testRunError"
+        :events="testEvents"
+        :events-error="testEventsError"
+        :artifacts="testArtifacts"
+        :live-status="testLiveStatus"
+        @close="handleTestResultClose"
+        @retry="handleTestResultRetry"
+        @refresh="refreshTestResult"
+        @download="downloadTestArtifact"
       />
 
       <TestBrowserPreview

@@ -15,6 +15,44 @@ export type MessageRole = 'user' | 'assistant'
  */
 export type MessageStatus = 'sending' | 'streaming' | 'done' | 'stopped' | 'failed'
 
+/**
+ * 任务（Run）状态 —— 对应 backend/API-run.md §二
+ *
+ * idle        当前会话没有任务
+ * running     正在执行（页面刷新后仍应显示「正在思考」）
+ * succeeded   执行成功
+ * failed      执行失败
+ * cancelled   被用户主动停止
+ * interrupted 服务重启导致中断（进程已不存在，可重试）
+ */
+export type RunStatus =
+  | 'idle'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled'
+  | 'interrupted'
+
+/**
+ * 会话当前活动任务快照
+ *
+ * 对应后端 `GET /api/chat/conversations/{conversationId}/active-run`。
+ * 页面刷新 / 切换会话时用它恢复任务，**不重新发送消息**（避免重复调 LLM）。
+ */
+export interface ActiveRunSnapshot {
+  conversationId: string
+  /** 无活动任务时为空字符串 */
+  runId: string
+  /** 无活动任务时为空字符串 */
+  status: RunStatus | ''
+  /** 该任务写入的助手消息 id；无任务时为空字符串 */
+  messageId: string
+  /** 已产出的最大事件 id，作为断点续传游标 */
+  lastEventId: number
+  /** 已产出的正文（刷新后立即回显，避免空白等待） */
+  content: string
+}
+
 /** 附件类型 */
 export type AttachmentType = 'image' | 'file'
 

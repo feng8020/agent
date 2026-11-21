@@ -8,8 +8,10 @@ withDefaults(
     canPreview?: boolean
     /** 是否存在可下载的源码（由会话产出状态决定） */
     canDownload?: boolean
+    /** 当前会话是否存在测试记录（决定是否显示「测试结果」入口） */
+    hasTestResult?: boolean
   }>(),
-  { canPreview: false, canDownload: false }
+  { canPreview: false, canDownload: false, hasTestResult: false }
 )
 
 const emit = defineEmits<{
@@ -17,6 +19,7 @@ const emit = defineEmits<{
   (e: 'toggle-sidebar'): void
   (e: 'preview'): void
   (e: 'download'): void
+  (e: 'test-result'): void
 }>()
 </script>
 
@@ -37,6 +40,19 @@ const emit = defineEmits<{
     </div>
 
     <div class="chat-header__actions">
+      <!-- 测试结果入口：仅在该会话确实有测试记录时显示 -->
+      <button
+        v-if="hasTestResult"
+        type="button"
+        class="chat-header__action chat-header__action--text"
+        title="查看测试结果"
+        aria-label="查看测试结果"
+        @click="emit('test-result')"
+      >
+        <AppIcon name="shield" :size="15" />
+        <span class="chat-header__action-label">测试结果</span>
+      </button>
+
       <!-- 项目交付入口：仅在该会话确实有产出时显示 -->
       <button
         v-if="canPreview"
@@ -147,7 +163,7 @@ const emit = defineEmits<{
   border-color: var(--color-border-strong);
 }
 
-/* 带文字的操作按钮（在线预览 / 下载源码） */
+/* 带文字的操作按钮（测试结果 / 在线预览 / 下载源码） */
 .chat-header__action--text {
   width: auto;
   gap: var(--space-2);
